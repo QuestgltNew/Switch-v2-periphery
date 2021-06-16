@@ -1,7 +1,7 @@
 pragma solidity =0.6.6;
 
-import '../interfaces/ISwitchV2Factory.sol';
-import '../libraries/TransferHelper.sol';
+import './interfaces/ISwitchV2Factory.sol';
+import './libraries/TransferHelper.sol';
 
 import './interfaces/ISwitchV2Router02.sol';
 import './libraries/SwitchV2Library.sol';
@@ -201,44 +201,44 @@ contract SwitchV2Router02 is ISwitchV2Router02 {
     }
 
     // **** REMOVE LIQUIDITY (supporting fee-on-transfer tokens) ****
-    function removeLiquidityETHSupportingFeeOnTransferTokens(
-        address token,
-        uint256 liquidity,
-        uint256 amountTokenMin,
-        uint256 amountETHMin,
-        address to,
-        uint256 deadline
-    ) public virtual override ensure(deadline) returns (uint256 amountETH) {
-        (, amountETH) = removeLiquidity(token, WETH, liquidity, amountTokenMin, amountETHMin, address(this), deadline);
-        TransferHelper.safeTransfer(token, to, IERC20(token).balanceOf(address(this)));
-        IWETH(WETH).withdraw(amountETH);
-        TransferHelper.safeTransferETH(to, amountETH);
-    }
+    // function removeLiquidityETHSupportingFeeOnTransferTokens(
+    //     address token,
+    //     uint256 liquidity,
+    //     uint256 amountTokenMin,
+    //     uint256 amountETHMin,
+    //     address to,
+    //     uint256 deadline
+    // ) public virtual override ensure(deadline) returns (uint256 amountETH) {
+    //     (, amountETH) = removeLiquidity(token, WETH, liquidity, amountTokenMin, amountETHMin, address(this), deadline);
+    //     TransferHelper.safeTransfer(token, to, IERC20(token).balanceOf(address(this)));
+    //     IWETH(WETH).withdraw(amountETH);
+    //     TransferHelper.safeTransferETH(to, amountETH);
+    // }
 
-    function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
-        address token,
-        uint256 liquidity,
-        uint256 amountTokenMin,
-        uint256 amountETHMin,
-        address to,
-        uint256 deadline,
-        bool approveMax,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external virtual override returns (uint256 amountETH) {
-        address pair = SwitchV2Library.pairFor(factory, token, WETH);
-        uint256 value = approveMax ? uint256(-1) : liquidity;
-        ISwitchV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
-        amountETH = removeLiquidityETHSupportingFeeOnTransferTokens(
-            token,
-            liquidity,
-            amountTokenMin,
-            amountETHMin,
-            to,
-            deadline
-        );
-    }
+    // function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
+    //     address token,
+    //     uint256 liquidity,
+    //     uint256 amountTokenMin,
+    //     uint256 amountETHMin,
+    //     address to,
+    //     uint256 deadline,
+    //     bool approveMax,
+    //     uint8 v,
+    //     bytes32 r,
+    //     bytes32 s
+    // ) external virtual override returns (uint256 amountETH) {
+    //     address pair = SwitchV2Library.pairFor(factory, token, WETH);
+    //     uint256 value = approveMax ? uint256(-1) : liquidity;
+    //     ISwitchV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+    //     amountETH = removeLiquidityETHSupportingFeeOnTransferTokens(
+    //         token,
+    //         liquidity,
+    //         amountTokenMin,
+    //         amountETHMin,
+    //         to,
+    //         deadline
+    //     );
+    // }
 
     // **** SWAP ****
     // requires the initial amount to have already been sent to the first pair
@@ -395,65 +395,65 @@ contract SwitchV2Router02 is ISwitchV2Router02 {
         }
     }
 
-    function swapExactTokensForTokensSupportingFeeOnTransferTokens(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external virtual override ensure(deadline) {
-        TransferHelper.safeTransferFrom(
-            path[0],
-            msg.sender,
-            SwitchV2Library.pairFor(factory, path[0], path[1]),
-            amountIn
-        );
-        uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
-        _swapSupportingFeeOnTransferTokens(path, to);
-        require(
-            IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            'SwitchV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
-        );
-    }
+    // function swapExactTokensForTokensSupportingFeeOnTransferTokens(
+    //     uint256 amountIn,
+    //     uint256 amountOutMin,
+    //     address[] calldata path,
+    //     address to,
+    //     uint256 deadline
+    // ) external virtual override ensure(deadline) {
+    //     TransferHelper.safeTransferFrom(
+    //         path[0],
+    //         msg.sender,
+    //         SwitchV2Library.pairFor(factory, path[0], path[1]),
+    //         amountIn
+    //     );
+    //     uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
+    //     _swapSupportingFeeOnTransferTokens(path, to);
+    //     require(
+    //         IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+    //         'SwitchV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+    //     );
+    // }
 
-    function swapExactETHForTokensSupportingFeeOnTransferTokens(
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external payable virtual override ensure(deadline) {
-        require(path[0] == WETH, 'SwitchV2Router: INVALID_PATH');
-        uint256 amountIn = msg.value;
-        IWETH(WETH).deposit{value: amountIn}();
-        assert(IWETH(WETH).transfer(SwitchV2Library.pairFor(factory, path[0], path[1]), amountIn));
-        uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
-        _swapSupportingFeeOnTransferTokens(path, to);
-        require(
-            IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            'SwitchV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
-        );
-    }
+    // function swapExactETHForTokensSupportingFeeOnTransferTokens(
+    //     uint256 amountOutMin,
+    //     address[] calldata path,
+    //     address to,
+    //     uint256 deadline
+    // ) external payable virtual override ensure(deadline) {
+    //     require(path[0] == WETH, 'SwitchV2Router: INVALID_PATH');
+    //     uint256 amountIn = msg.value;
+    //     IWETH(WETH).deposit{value: amountIn}();
+    //     assert(IWETH(WETH).transfer(SwitchV2Library.pairFor(factory, path[0], path[1]), amountIn));
+    //     uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
+    //     _swapSupportingFeeOnTransferTokens(path, to);
+    //     require(
+    //         IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+    //         'SwitchV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+    //     );
+    // }
 
-    function swapExactTokensForETHSupportingFeeOnTransferTokens(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external virtual override ensure(deadline) {
-        require(path[path.length - 1] == WETH, 'SwitchV2Router: INVALID_PATH');
-        TransferHelper.safeTransferFrom(
-            path[0],
-            msg.sender,
-            SwitchV2Library.pairFor(factory, path[0], path[1]),
-            amountIn
-        );
-        _swapSupportingFeeOnTransferTokens(path, address(this));
-        uint256 amountOut = IERC20(WETH).balanceOf(address(this));
-        require(amountOut >= amountOutMin, 'SwitchV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        IWETH(WETH).withdraw(amountOut);
-        TransferHelper.safeTransferETH(to, amountOut);
-    }
+    // function swapExactTokensForETHSupportingFeeOnTransferTokens(
+    //     uint256 amountIn,
+    //     uint256 amountOutMin,
+    //     address[] calldata path,
+    //     address to,
+    //     uint256 deadline
+    // ) external virtual override ensure(deadline) {
+    //     require(path[path.length - 1] == WETH, 'SwitchV2Router: INVALID_PATH');
+    //     TransferHelper.safeTransferFrom(
+    //         path[0],
+    //         msg.sender,
+    //         SwitchV2Library.pairFor(factory, path[0], path[1]),
+    //         amountIn
+    //     );
+    //     _swapSupportingFeeOnTransferTokens(path, address(this));
+    //     uint256 amountOut = IERC20(WETH).balanceOf(address(this));
+    //     require(amountOut >= amountOutMin, 'SwitchV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+    //     IWETH(WETH).withdraw(amountOut);
+    //     TransferHelper.safeTransferETH(to, amountOut);
+    // }
 
     // **** LIBRARY FUNCTIONS ****
     function quote(
